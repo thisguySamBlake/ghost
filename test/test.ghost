@@ -1,0 +1,38 @@
+At the very start of a ghost-powered game, there should be some amount of introductory text before the player is given control.
+
+This text supports Markdown formatting, which means it can use *italics* and **bold** and such.
+
+> get ye flask
+
+In general, the format of a ghost file is that you write a command (`> verb [object]`) and then follow it with the descriptive text to be displayed when the command is executed by the player; that is, the contents of the file *look like gameplay*; this is a much more rich environment for writing such a game than GUI or script-heavy environment.
+
+Commands that appear immediately after the start text are *global*; that is, they can be invoked irrespective of room context (more on that later).
+
+Note that use of `>` overloads the blockquote syntax of Markdown. Blockquotes in turn usurp Markdown's code block syntax, which is indentation by four spaces:
+
+    For night's swift dragons cut the clouds full fast  
+    And yonder shines Aurora's harbinger  
+    At whose approach, ghosts, wandering here and there  
+    Troop home to churchyards: damned spirits all  
+    That in crossways and floods have burial  
+    Already to their wormy beds are gone
+
+If you're looking to insert code blocks into your text adventure...write your own damn engine.
+
+> go starting room
+  -> next room
+  -> secret exit
+
+Room commands are a special case of commands:
+
+1. They always start with the verb `> go`.
+2. They must be followed by a line starting with the label "Exits:" and a list of the legal exits from the room. This list should follow YAML syntax: either as shown above, or inline as `Exits: next room, secret exist`. (The inline syntax should be avoided if room names contain commas.)
+3. They define a new *room context*. A room context determines what commands are available to a player at a given time.
+
+Note that the engine does nothing to expose these engines to the player. If you want the player to know that they can escape through the **window** as well as simply wandering into the **hallway**, you'll need to indicate that in the prose.
+
+The room command also automatically defines a `> look` command
+
+> do something
+
+Any command that isn't `go` is a standard command. Note that because this command is defined after a room command, it's presumed to be a *local* command; that is, it can be executed only in this room context.
