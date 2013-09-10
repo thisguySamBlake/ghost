@@ -15,9 +15,8 @@ such a game than a GUI or script-heavy environment.
 Commands that appear immediately after the start text are *global*; that is,
 they can be invoked irrespective of room context (more on that later).
 
-Note that use of `>` overloads the blockquote syntax of Markdown. Blockquotes
-in turn usurp Markdown's code block syntax, which is indentation by four
-spaces:
+Note that use of `>` overloads the blockquote syntax of Markdown. Blockquotes in
+turn usurp Markdown's code block syntax, which is indentation by four spaces:
 
     For night's swift dragons cut the clouds full fast  
     And yonder shines Aurora's harbinger  
@@ -28,6 +27,19 @@ spaces:
 
 If you're looking to insert code blocks into your text adventure...write your
 own damn engine.
+
+> eluctate *
+> elucidate *
+> explicate *
+
+Commands often have *objects* (at least in the linguistic sense) associated with
+them. For commands on specific objects, this is simply implemented as with
+`> get ye flask` above. For commands that can take *arbitrary* objects, the
+asterisk (`*`) can be used as a wildcard that will accept any text.
+
+It may also be desirable to have multiple commands do the same action; this is
+acheieved by bundling synonymous commands together before a common block of
+descriptive text.
 
 > go starting room
   -> next room
@@ -46,9 +58,17 @@ want the player to know that they can escape through the **secret exit** as
 well as simply wandering into the **next room**, you'll need to indicate that
 in the prose somehow.
 
+ghost will automatically generate a `> look` command, which simply displays the
+description for the current room context.
+
 > do something
 
 Any command that doesn't start with `go` is a standard command. Note that
 because this command is defined after a room command, it's presumed to be a
 *local* command; that is, it can be executed only in this room context (i.e.
 when the player is in this room).
+
+> go next room
+  -> starting room
+
+Further description.
