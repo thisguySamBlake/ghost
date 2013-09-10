@@ -15,7 +15,7 @@ class GhostParser < Parslet::Parser
   # Text
   rule(:wildcard)    { space >> str('*') >> space? }
   rule(:label)       { (newline.absent? >> wildcard.absent? >> any).repeat(1) }
-  rule(:description) { (new_prompt.absent? >> any).repeat(1) }
+  rule(:description) { (new_prompt.absent? >> timestamp.absent? >> any).repeat(1).as(:descriptive_text) }
 
   # Commands
   rule(:room_command_prefix)  { str('go') >> space }
@@ -26,11 +26,15 @@ class GhostParser < Parslet::Parser
   rule(:commands)             { command >> (synonym_prompt >> command).repeat }
 
   # Actions (commands + results)
-  rule(:action) { new_prompt >> commands.as(:commands) >> blank_line >> description.as(:result) }
+  rule(:action) { new_prompt >> commands.as(:commands) >> blank_line >> descriptions.as(:result) }
+
+  # Timestamps
+  rule(:descriptions) { description >> (timestamp >> description).repeat }
+  rule(:timestamp)    { blank_line >> str('[') >> match('\d').repeat(1).as(:timestamp) >> str(']') >> blank_line }
 
   # Rooms
   rule(:exit) { newline >> str('  -> ') >> label.as(:exit)}
-  rule(:room) { new_prompt >> room_command >> exit.repeat.as(:exits) >> blank_line >> description.as(:description) >> action.repeat.as(:local_actions) }
+  rule(:room) { new_prompt >> room_command >> exit.repeat.as(:exits) >> blank_line >> descriptions.as(:description) >> action.repeat.as(:local_actions) }
 
   # Game
   rule(:game) { description.as(:start) >> action.repeat.as(:global_actions) >> room.repeat(1).as(:rooms) }
