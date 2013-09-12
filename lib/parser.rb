@@ -14,7 +14,7 @@ class GhostParser < Parslet::Parser
 
   # Text
   rule(:wildcard)    { space >> str('*') >> space? }
-  rule(:label)       { (newline.absent? >> wildcard.absent? >> any).repeat(1) }
+  rule(:label)       { (newline.absent? >> wildcard.absent? >> any).repeat(1).as(:label) }
   rule(:description) { (new_prompt.absent? >> timestamp.absent? >> any).repeat(1).as(:descriptive_text) }
 
   # Commands
@@ -34,7 +34,7 @@ class GhostParser < Parslet::Parser
 
   # Rooms
   rule(:exit) { newline >> str('  -> ') >> label.as(:exit)}
-  rule(:room) { new_prompt >> room_command >> exit.repeat.as(:exits) >> blank_line >> descriptions.as(:description) >> action.repeat.as(:local_actions) }
+  rule(:room) { new_prompt >> room_command >> (synonym_prompt >> room_command).repeat >> exit.repeat.as(:exits) >> blank_line >> descriptions.as(:description) >> action.repeat.as(:local_actions) }
 
   # Game
   rule(:game) { description.as(:start) >> action.repeat.as(:global_actions) >> room.repeat(1).as(:rooms) }
