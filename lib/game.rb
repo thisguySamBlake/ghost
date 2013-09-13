@@ -13,8 +13,8 @@ module Ghost
     end
 
     def describe(description, free = false)
-      puts description[@time]
       @time += 1 unless free
+      puts description[@time]
     end
 
     def execute(command)
@@ -24,12 +24,23 @@ module Ghost
         describe current_room.description
       elsif command == "time"
         puts @time
+      elsif command.start_with? "go "
+        move command[3..command.length]
       elsif current_room[command]
         describe current_room[command]
       elsif self[command]
         describe self[command]
       else
         puts "Unrecognized command"
+      end
+    end
+
+    def move(destination)
+      if current_room.exits.include? destination
+        @current_room_name = destination
+        describe current_room.description
+      else
+        "Invalid exit"
       end
     end
 
@@ -41,13 +52,15 @@ module Ghost
         print "> "
         input = STDIN.gets.chomp
         puts
-        execute Command.new input
+        execute input
       end
     end
 
     def start
       @time = 0
       describe @start_description, free: true
+      puts
+      describe current_room.description, free: true
     end
   end
 
@@ -80,27 +93,13 @@ module Ghost
     end
   end
 
-  class Command
-    attr_accessor :command
+  class Command < String
+    attr_accessor :str, :transitive
 
-    # TODO: this is dangerous and should be replaced with a better approach
-    def ==(command_string)
-      @command == command_string
+    def initialize(str, transitive: false)
+      super str
+      @str = str
+      @transitive = transitive
     end
-
-    def eql?(other)
-      @command.eql? other.command
-    end
-
-    def hash
-      @command.hash
-    end
-
-    def initialize(command_string)
-      @command = command_string
-    end
-  end
-
-  class TransitiveCommand < Command
   end
 end
