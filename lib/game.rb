@@ -1,5 +1,6 @@
 module Ghost
   require 'awesome_print'
+  require 'readline'
 
   class Game
     attr_accessor :start_description, :actions, :rooms, :time, :current_room_name
@@ -47,12 +48,17 @@ module Ghost
     def play
       puts
       start
-      loop do
+      puts
+      begin
+        while input = Readline.readline("> ", true)
+          puts
+          execute input
+          puts
+        end
+      rescue Interrupt => e
+        puts "quit"
         puts
-        print "> "
-        input = STDIN.gets.chomp
-        puts
-        execute input
+        exit
       end
     end
 
