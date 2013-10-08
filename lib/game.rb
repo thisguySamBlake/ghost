@@ -13,8 +13,8 @@ module Ghost
       rooms[@current_room_name]
     end
 
-    def describe(description, free = false)
-      @time += 1 unless free
+    def describe(description, time_cost: 1)
+      @time += time_cost
       puts description[@time]
     end
 
@@ -64,9 +64,9 @@ module Ghost
 
     def start
       @time = 0
-      describe @start_description, free: true
+      describe @start_description, time_cost: 0
       puts
-      describe current_room.description, free: true
+      describe current_room.description, time_cost: 0
     end
   end
 
