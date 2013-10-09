@@ -2,12 +2,27 @@ module Ghost
   require 'awesome_print'
   require 'readline'
 
-  class Game
-    attr_accessor :start_description, :actions, :rooms, :time, :current_room_name
+  module Actionable
+    def [](input)
+      # Find an action that matches the input
+      action = @actions.find do |command, result|
+        if command.transitive
+          input.start_with?(command)
+        else
+          input == command
+        end
+      end
 
-    def [](command)
-      @actions[command]
+      # If an action is found, return its result
+      (action) ? action[1] : nil
     end
+  end
+
+  class Game
+    include Actionable
+    attr_accessor :actions
+
+    attr_accessor :start_description, :rooms, :time, :current_room_name
 
     def current_room
       rooms[@current_room_name]
@@ -50,7 +65,7 @@ module Ghost
       start
       puts
       begin
-        while input = Readline.readline("> ", true)
+        while input = Readline.readline("> ", true).downcase
           puts
           execute input
           puts
@@ -71,15 +86,14 @@ module Ghost
   end
 
   class Room
-    attr_accessor :name, :exits, :description, :actions
+    include Actionable
+    attr_accessor :actions
+    @actions = {}
+
+    attr_accessor :name, :exits, :description
     @name = nil
     @exits = []
     @description = nil
-    @actions = {}
-
-    def [](command)
-      @actions[command]
-    end
   end
 
   class Description
