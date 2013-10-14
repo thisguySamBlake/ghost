@@ -38,6 +38,10 @@ module Ghost
         exit
       elsif command == "look"
         describe current_room.description
+      elsif command == "wait"
+        next_time = current_room.description.next_time @time
+        @time = next_time - 1 if next_time
+        describe current_room.description
       elsif command == "time"
         puts @time
       elsif command.start_with? "go "
@@ -100,16 +104,36 @@ module Ghost
     attr_accessor :descriptions
 
     def [](time)
-      # Return description valid at the given time
-      @descriptions.keys.sort.reverse.each do |timestamp|
-        if timestamp <= time
-          return @descriptions[timestamp]
-        end
-      end
+      prev_time = prev_time time
+      @descriptions[prev_time] if prev_time
     end
 
     def initialize(timestamped_descriptions)
       @descriptions = timestamped_descriptions
+    end
+
+    def next_time(time)
+      # Attempt to find a timestamp after the current time
+      @descriptions.keys.sort.each do |timestamp|
+        if timestamp > time
+          return timestamp
+        end
+      end
+
+      # Return nil if no such timestamp is found
+      return nil
+    end
+
+    def prev_time(time)
+      # Attempt to find a timestamp before the current time
+      @descriptions.keys.sort.reverse.each do |timestamp|
+        if timestamp <= time
+          return timestamp
+        end
+      end
+
+      # Return nil if no such timestamp is found
+      return nil
     end
   end
 
