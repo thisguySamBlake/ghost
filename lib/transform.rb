@@ -15,14 +15,15 @@ class GhostTransform < Parslet::Transform
   end
 
   # Rooms
-  rule(:exit          => simple(:room)) { room }
-  rule(:room_name     => simple(:name),
-       :exits         => sequence(:exits),
+  rule(:room_name => simple(:name)) { { :zone => nil, :name => name } }
+  rule(:zoned_room    => subtree(:zoned_room),
+       :exits         => subtree(:exits),
        :description   => subtree(:descriptions),
        :local_actions => subtree(:actions)) do |dict|
     room             = Ghost::Room.new
-    room.name        = dict[:name]
-    room.exits       = dict[:exits]
+    room.zone        = dict[:zoned_room][:zone] # not yet object ref
+    room.name        = dict[:zoned_room][:name]
+    room.exits       = dict[:exits] # not yet object refs
     room.description = flatten_descriptions dict[:descriptions]
     room.actions     = flatten_actions dict[:actions]
     room
@@ -35,8 +36,8 @@ class GhostTransform < Parslet::Transform
     game = Ghost::Game.new
     game.start_description = Ghost::Description.new dict[:start]
     game.actions           = flatten_actions dict[:actions]
-    game.rooms             = Hash[dict[:rooms].map{|room| [room.name, room]}]
-    game.current_room_name = dict[:rooms].first.name
+    game.zones             = inflate_zones dict[:rooms]
+    game.current_room      = dict[:rooms].first
     game
   end
 
@@ -71,5 +72,56 @@ class GhostTransform < Parslet::Transform
 
     # Merge array of hashes: i.e. [{0 => "str0"}, {10 => "str1"}] yields {0 => "str0", 10 => "str1"}
     Ghost::Description.new descriptions.inject(:merge)
+  end
+
+  # Convert zone strings to first class object refs
+  def self.inflate_zones(rooms)
+    zones = {}
+    last_zone = nil
+
+    rooms.each do |room|
+      # Create zone if necessary
+      if room.zone
+        unless zones.key? room.zone
+          zones[room.zone] = Ghost::Zone.new
+          zones[room.zone].name = room.zone
+          zones[room.zone].rooms = {}
+          last_zone = zones[room.zone]
+        end
+      end
+
+      # Hydrate room->zone ref
+      if room.zone
+        room.zone = zones[room.zone]
+      else
+        # Use the last created zone if none is provided
+        room.zone = last_zone
+      end
+
+      # Add room to zone
+      zones[room.zone.name].rooms[room.name] = room
+    end
+
+    # Hydrate exit refs
+    zones.each do |name, zone|
+      zone.rooms.each do |name, room|
+        exit_refs = []
+
+        room.exits.each do |exit|
+          exit = exit[:exit]
+
+          # If the exit's zone isn't specified, it's the same as the room's
+          exit_zone = (exit.key? :zone) ? zones[exit[:zone]] : room.zone
+
+          # Add room ref to list of valid exits
+          exit_refs << exit_zone.rooms[exit[:name]]
+        end
+
+        # Replace list of strings with list of refs
+        room.exits = exit_refs
+      end
+    end
+
+    zones
   end
 end

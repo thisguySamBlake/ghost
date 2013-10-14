@@ -41,22 +41,22 @@ It may also be desirable to have multiple commands do the same action; this is
 acheieved by bundling synonymous commands together before a common block of
 descriptive text.
 
-> go starting room
+> go starting zone -> starting room
   -> next room
-  -> secret exit
+  -> secret zone -> secret room
 
 Room commands are a special case of commands:
 
 1. They always start with `> go`.
 2. They must be followed by any legal exits from the room, each indented two
-   spaces and marked with an arrow (as above).
+   spaces and an arrow prefix.
 3. They define a new *room context*. A room context determines what commands
    are available to a player at a given time.
 
 Note that the engine does nothing to expose these exits to the player. If you
-want the player to know that they can escape through the **secret exit** as
-well as simply wandering into the **next room**, you'll need to indicate that
-in the prose somehow.
+want the player to know that they can escape into the **secret zone** as well as
+simply wandering into the **next room**, you'll need to indicate that in the
+prose somehow.
 
 ghost will automatically generate a `> look` command, which simply displays the
 description for the current room context.
@@ -99,3 +99,18 @@ with it.
 
 ghost will automatically generate a `> wait` command, which serves to increment
 elapsed play time by one step.
+
+> go secret zone -> secret room
+
+A room command of the form `> go zone -> room` indicates a new *zone context*.
+Rooms following the declaration of a new zone context are considered part of
+that zone.
+
+Zones exist to allow for granularity of room names. If, for example, you want
+players to be able to leave buildings via the command `> go outside`, but you
+want the "outside" to consist of more than a single room, you can implement it
+as a zone. Zones can contain any number of rooms, and access to and from a zone
+can be restricted to specific rooms.
+
+A room command with exit `-> zone -> room` thus indicates that the command `> go
+zone` would bring the player to the specified zone and room.

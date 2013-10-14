@@ -21,12 +21,9 @@ module Ghost
   class Game
     include Actionable
     attr_accessor :actions
+    @actions = {}
 
-    attr_accessor :start_description, :rooms, :time, :current_room_name
-
-    def current_room
-      rooms[@current_room_name]
-    end
+    attr_accessor :start_description, :zones, :time, :current_room
 
     def describe(description, time_cost: 1)
       @time += time_cost
@@ -56,8 +53,9 @@ module Ghost
     end
 
     def move(destination)
-      if current_room.exits.include? destination
-        @current_room_name = destination
+      exit = current_room.exit destination
+      if exit
+        @current_room = exit
         describe current_room.description
       else
         "Invalid exit"
@@ -89,15 +87,31 @@ module Ghost
     end
   end
 
+  class Zone
+    attr_accessor :name, :rooms
+  end
+
   class Room
     include Actionable
     attr_accessor :actions
     @actions = {}
 
-    attr_accessor :name, :exits, :description
+    attr_accessor :zone, :name, :exits, :description
     @name = nil
     @exits = []
     @description = nil
+
+    def exit(destination)
+      # Attempt to find an exit matching the input
+      exits.each do |exit|
+        if exit.name == destination or exit.zone.name == destination
+          return exit
+        end
+      end
+
+      # Return nil if no matching exit is found
+      return nil
+    end
   end
 
   class Description
