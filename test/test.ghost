@@ -89,16 +89,18 @@ before time 1, and it requires at least one time step to reach this room. This
 text, on the other hand, would be seen if the player executed `> go next room`
 as their first command.
 
+ghost will automatically generate a `> wait` command, which serves to increment
+elapsed play time until a new description is available. If there is no future
+description, the command does nothing. (Though it's invisible to the player how
+much time has or has not passed.)
+
 [100]
 
 This text could also be shown. If the player executed 99 commands in the
 starting room and then executed `> go next room`, this is the descriptive text
 that would be displayed. Alternatively, the player could come to this room and
 simply execute `> look` repeatedly, though they probably wouldn't have much fun
-with it.
-
-ghost will automatically generate a `> wait` command, which serves to increment
-elapsed play time by one step.
+with it. Further alternatively, the player could execute the `> wait` command.
 
 > go secret zone -> secret room
 
