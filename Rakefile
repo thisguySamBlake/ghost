@@ -8,17 +8,17 @@ task :test => ["test:parser", "test:transform"]
 
 namespace 'test' do
   task :parser do
-    parse = GhostParser.new.parse test_ghost
+    parse = Ghost::Parser.new.parse test_ghost
     ap parse
   end
 
   task :transform do
-    game = GhostTransform.new.apply GhostParser.new.parse test_ghost
+    game = Ghost::Transform.new.apply Ghost::Parser.new.parse test_ghost
     ap game, raw: true
   end
 
   task :game do
-    game = GhostTransform.new.apply GhostParser.new.parse test_ghost
+    game = Ghost::Transform.new.apply Ghost::Parser.new.parse test_ghost
     game.play
   end
 end
