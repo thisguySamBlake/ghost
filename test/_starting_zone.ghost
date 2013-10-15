@@ -4,6 +4,16 @@ introductory text before the player is given control.
 This text supports Markdown formatting, which means it can use *italics* and
 **bold** and such.
 
+ghost supports breaking a game into multiple files; when reading a game, it will
+simply concatenate all `*.ghost` files in a directory in sorted order. To that
+end, it's necessary to put the start of the game in a file that will appear
+first in a sort, such as `_starting_zone.ghost`.
+
+A convenient, though not required, way to break apart files is by *zones*. This
+game is defined in both `_starting_zone.ghost` (which contains introductory
+text, global commands, and a starting zone) as well as in `secret_zone.ghost`,
+which defines an additional zone.
+
 > get ye flask
 
 In general, the format of a ghost file is that you write a command following a
@@ -101,18 +111,3 @@ starting room and then executed `> go next room`, this is the descriptive text
 that would be displayed. Alternatively, the player could come to this room and
 simply execute `> look` repeatedly, though they probably wouldn't have much fun
 with it. Further alternatively, the player could execute the `> wait` command.
-
-> go secret zone -> secret room
-
-A room command of the form `> go zone -> room` indicates a new *zone context*.
-Rooms following the declaration of a new zone context are considered part of
-that zone.
-
-Zones exist to allow for granularity of room names. If, for example, you want
-players to be able to leave buildings via the command `> go outside`, but you
-want the "outside" to consist of more than a single room, you can implement it
-as a zone. Zones can contain any number of rooms, and access to and from a zone
-can be restricted to specific rooms.
-
-A room command with exit `-> zone -> room` thus indicates that the command `> go
-zone` would bring the player to the specified zone and room.
