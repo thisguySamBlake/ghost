@@ -82,8 +82,6 @@ module Ghost
     def start
       @time = 0
       describe @start_description, time_cost: 0
-      puts
-      describe current_room.description, time_cost: 0
     end
   end
 

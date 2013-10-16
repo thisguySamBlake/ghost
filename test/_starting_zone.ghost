@@ -14,6 +14,10 @@ game is defined in both `_starting_zone.ghost` (which contains introductory
 text, global commands, and a starting zone) as well as in `secret_zone.ghost`,
 which defines an additional zone.
 
+The game begins in whatever room is defined first. ghost will automatically
+generate a `> look` command, which simply displays the description for the
+current room.
+
 > get ye flask
 
 In general, the format of a ghost file is that you write a command following a
@@ -67,9 +71,6 @@ Note that the engine does nothing to expose these exits to the player. If you
 want the player to know that they can escape into the **secret zone** as well as
 simply wandering into the **next room**, you'll need to indicate that in the
 prose somehow.
-
-ghost will automatically generate a `> look` command, which simply displays the
-description for the current room context.
 
 > do something
 
