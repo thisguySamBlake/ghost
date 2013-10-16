@@ -5,8 +5,10 @@ module Ghost
 
       # Concatenate all *.ghost files into one über-string
       Dir.glob(File.join(dir, "*.ghost"), File::FNM_CASEFOLD).sort.each do |filename|
+        if ghost_string != ""
+          ghost_string += "\n"
+        end
         ghost_string += File.read filename
-        ghost_string += "\n"
       end
 
       ghost_string
