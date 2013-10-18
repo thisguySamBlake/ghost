@@ -58,7 +58,7 @@ module Ghost
         @current_room = exit
         describe current_room.description
       else
-        "Invalid exit"
+        puts "Invalid exit"
       end
     end
 
