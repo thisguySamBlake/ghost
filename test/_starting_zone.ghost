@@ -88,7 +88,7 @@ via *timestamps*.
 
 Timestamps allow for time-contextual descriptive text. What do we mean by that?
 
-[1]
+[one time step away = 1]
 
 The descriptive text of a command can change over "time". (Time is only roughly
 simulated by ghost as "number of commands executed so far".) We can then delimit
@@ -105,7 +105,7 @@ elapsed play time until a new description is available. If there is no future
 description, the command does nothing. (Though it's invisible to the player how
 much time has or has not passed.)
 
-[100]
+[one time step away + 99]
 
 This text could also be shown. If the player executed 99 commands in the
 starting room and then executed `> go next room`, this is the descriptive text

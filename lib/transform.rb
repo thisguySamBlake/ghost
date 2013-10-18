@@ -5,8 +5,16 @@ module Ghost
     # Labels / Descriptions
     rule(:label            => simple(:text)) { String(text) }
     rule(:descriptive_text => simple(:text)) { { 0 => String(text) } }
-    rule(:timestamp        => simple(:t),
-         :descriptive_text => simple(:text)) { { Integer(t) => String(text) } }
+
+    # Timestamps
+    rule(:name     => simple(:name))     { { :name => String(name) } }
+    rule(:name     => simple(:name),
+         :operator => simple(:operator),
+         :value    => simple(:value))    { { :name     => String(name),
+                                             :operator => String(operator),
+                                             :value    => Integer(value) } }
+    rule(:timestamp        => subtree(:t),
+         :descriptive_text => simple(:text)) { { t => String(text) } }
 
     # Actions
     rule(:commands => sequence(:commands),
@@ -39,6 +47,7 @@ module Ghost
       game.actions           = flatten_actions dict[:actions]
       game.zones             = inflate_zones dict[:rooms]
       game.current_room      = dict[:rooms].first
+      inflate_timestamps game
       game
     end
 
@@ -59,7 +68,7 @@ module Ghost
             command = Ghost::Command.new command_hash[:transitive_command], transitive: true
           end
 
-          flattened_actions[command] = Ghost::Description.new action[:result]
+          flattened_actions[command] = flatten_descriptions action[:result]
         end
       end
 
@@ -124,6 +133,111 @@ module Ghost
       end
 
       zones
+    end
+
+    # TODO: Refactor (improve object model)
+    def self.inflate_timestamps(game)
+      timestamps = {}
+
+      # Set all absolute timestamps to integer values
+      game.zones.each do |name, zone|
+        zone.rooms.each do |name, room|
+          rehashed_descriptions = {}
+
+          room.description.descriptions.each do |timestamp, descriptive_text|
+            if timestamp.is_a? Hash and timestamp.key? :operator and timestamp[:operator] == "="
+              time = timestamp[:value]
+
+              # Add to timestamp dictionary
+              timestamps[timestamp[:name]] = time
+
+              # Replace timestamp object with integer value
+              # NOTE: We can't modify the hash during iteration, because Ruby
+              rehashed_descriptions[time] = descriptive_text
+              room.description.descriptions.delete timestamp
+            end
+          end
+
+          # Add descriptions with integer timestamps
+          room.description.descriptions.merge! rehashed_descriptions
+
+          room.actions.each do |command, description|
+            rehashed_descriptions = {}
+
+            description.descriptions.each do |timestamp, descriptive_text|
+              if timestamp.is_a? Hash and timestamp.key? :operator and timestamp[:operator] == "="
+                time = timestamp[:value]
+
+                # Add to timestamp dictionary
+                timestamps[timestamp[:name]] = time
+
+                # Replace timestamp object with integer value
+                # NOTE: We can't modify the hash during iteration, because Ruby
+                rehashed_descriptions[time] = descriptive_text
+                description.descriptions.delete timestamp
+              end
+            end
+
+            # Add descriptions with integer timestamps
+            description.descriptions.merge! rehashed_descriptions
+          end
+        end
+      end
+
+      # Set all relative timestamps to integer values
+      game.zones.each do |name, zone|
+        zone.rooms.each do |name, room|
+          rehashed_descriptions = {}
+
+          room.description.descriptions.each do |timestamp, descriptive_text|
+            if timestamp.is_a? Hash and timestamp.key? :name
+              # Calculate relative time value
+              time = timestamps[timestamp[:name]]
+              if timestamp.key? :operator
+                if timestamp[:operator] == "+"
+                  time += timestamp[:value]
+                elsif timestamp[:operator] == "-"
+                  time -= timestamp[:value]
+                end
+              end
+
+              # Replace timestamp object with integer value
+              # NOTE: We can't modify the hash during iteration, because Ruby
+              rehashed_descriptions[time] = descriptive_text
+              room.description.descriptions.delete timestamp
+            end
+          end
+
+          # Add descriptions with integer timestamps
+          room.description.descriptions.merge! rehashed_descriptions
+
+          room.actions.each do |command, description|
+            rehashed_descriptions = {}
+
+            description.descriptions.each do |timestamp, descriptive_text|
+              if timestamp.is_a? Hash and timestamp.key? :name
+                # Calculate relative time value
+                time = timestamps[timestamp[:name]]
+                if timestamp.key? :operator
+                  if timestamp[:operator] == "+"
+                    time += timestamp[:value]
+                  elsif timestamp[:operator] == "-"
+                    time -= timestamp[:value]
+                  end
+                end
+
+                # Replace timestamp object with integer value
+                # NOTE: We can't modify the hash during iteration, because Ruby
+                rehashed_descriptions[time] = descriptive_text
+                description.descriptions.delete timestamp
+              end
+            end
+
+            # Add descriptions with integer timestamps
+            description.descriptions.merge! rehashed_descriptions
+          end
+        end
+      end
     end
   end
 end

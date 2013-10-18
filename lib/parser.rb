@@ -15,7 +15,11 @@ module Ghost
     rule(:synonym_prompt) { newline >> prompt }
 
     # Symbols
-    rule(:arrow) { space? >> str('->') >> space }
+    rule(:arrow)         { space? >> str('->') >> space }
+    rule(:left_bracket)  { str('[') }
+    rule(:right_bracket) { str(']') }
+    rule(:bracket)       { left_bracket | right_bracket }
+    rule(:operator)      { space >> (str('=') | str('+') | str('-')).as(:operator) >> space }
 
     # Text
     rule(:wildcard)    { space >> str('*') >> space? }
@@ -34,8 +38,10 @@ module Ghost
     rule(:action) { new_prompt >> commands.as(:commands) >> blank_line >> descriptions.as(:result) }
 
     # Timestamps
-    rule(:descriptions) { description >> (timestamp >> description).repeat }
-    rule(:timestamp)    { blank_line >> str('[') >> match('\d').repeat(1).as(:timestamp) >> str(']') >> blank_line }
+    rule(:descriptions)    { description >> (timestamp >> description).repeat }
+    rule(:timestamp_name)  { (bracket.absent? >> newline.absent? >> operator.absent? >> any).repeat(1).as(:name) }
+    rule(:timestamp_value) { operator >> match('\d').repeat(1).as(:value) }
+    rule(:timestamp)       { blank_line >> left_bracket >> (timestamp_name >> timestamp_value.maybe).as(:timestamp) >> right_bracket >> blank_line }
 
     # Rooms
     rule(:exit) { newline >> indent >> arrow >> zoned_room.as(:exit)}
