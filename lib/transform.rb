@@ -176,8 +176,6 @@ module Ghost
     def self.process_timestamps_if(game, condition)
       game.each do |name, zone|
         zone.each do |name, room|
-          rehashed_descriptions = {}
-
           room.actions.each do |command, description|
             rehashed_descriptions = {}
 
