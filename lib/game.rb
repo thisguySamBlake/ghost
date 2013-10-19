@@ -33,12 +33,10 @@ module Ghost
     def execute(command)
       if command == "quit"
         exit
-      elsif command == "look"
-        describe current_room.description
       elsif command == "wait"
-        next_time = current_room.description.next_time @time
+        next_time = current_room["look"].next_time @time
         @time = next_time - 1 if next_time
-        describe current_room.description
+        describe current_room["look"]
       elsif command == "time"
         puts @time
       elsif command.start_with? "go "
@@ -56,7 +54,7 @@ module Ghost
       exit = current_room.exit destination
       if exit
         @current_room = exit
-        describe current_room.description
+        describe current_room["look"]
       else
         puts "Invalid exit"
       end
@@ -94,10 +92,9 @@ module Ghost
     attr_accessor :actions
     @actions = {}
 
-    attr_accessor :zone, :name, :exits, :description
+    attr_accessor :zone, :name, :exits
     @name = nil
     @exits = []
-    @description = nil
 
     def exit(destination)
       # Attempt to find an exit matching the input
@@ -112,21 +109,22 @@ module Ghost
     end
   end
 
-  class Description
-    attr_accessor :descriptions
-
-    def [](time)
-      prev_time = prev_time time
-      @descriptions[prev_time] if prev_time
+  class Description < Hash
+    # Instantiate a Description from a hash
+    def self.new(hsh)
+      super_hsh = super
+      super_hsh.replace hsh
     end
 
-    def initialize(timestamped_descriptions)
-      @descriptions = timestamped_descriptions
+    # Access the last valid descriptive text
+    def [](time)
+      prev_time = prev_time time
+      fetch prev_time if prev_time
     end
 
     def next_time(time)
       # Attempt to find a timestamp after the current time
-      @descriptions.keys.sort.each do |timestamp|
+      keys.sort.each do |timestamp|
         if timestamp > time
           return timestamp
         end
@@ -138,7 +136,7 @@ module Ghost
 
     def prev_time(time)
       # Attempt to find a timestamp before the current time
-      @descriptions.keys.sort.reverse.each do |timestamp|
+      keys.sort.reverse.each do |timestamp|
         if timestamp <= time
           return timestamp
         end
@@ -150,11 +148,10 @@ module Ghost
   end
 
   class Command < String
-    attr_accessor :str, :transitive
+    attr_accessor :transitive
 
     def initialize(str, transitive: false)
       super str
-      @str = str
       @transitive = transitive
     end
   end
