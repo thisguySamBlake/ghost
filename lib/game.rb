@@ -2,10 +2,10 @@ module Ghost
   require 'awesome_print'
   require 'readline'
 
-  module Actionable
+  class ActionCollection < Hash
     def [](input)
       # Find an action that matches the input
-      action = @actions.find do |command, result|
+      action = find do |command, result|
         if command.transitive
           input.start_with?(command)
         else
@@ -18,12 +18,15 @@ module Ghost
     end
   end
 
-  class Game
-    include Actionable
+  class Game < Hash
+    # Actions
     attr_accessor :actions
-    @actions = {}
 
-    attr_accessor :start_description, :zones, :time, :current_room
+    # Properties
+    attr_accessor :start_description
+
+    # State
+    attr_accessor :time, :current_room
 
     def describe(description, time_cost: 1)
       @time += time_cost
@@ -34,27 +37,31 @@ module Ghost
       if command == "quit"
         exit
       elsif command == "wait"
-        next_time = current_room["look"].next_time @time
+        next_time = current_room.actions["look"].next_time @time
         @time = next_time - 1 if next_time
-        describe current_room["look"]
+        describe current_room.actions["look"]
       elsif command == "time"
         puts @time
       elsif command.start_with? "go "
         move command[3..command.length]
-      elsif current_room[command]
-        describe current_room[command]
-      elsif self[command]
-        describe self[command]
+      elsif current_room.actions[command]
+        describe current_room.actions[command]
+      elsif self.actions[command]
+        describe self.actions[command]
       else
         puts "Unrecognized command"
       end
+    end
+
+    def initialize
+      @actions = Ghost::ActionCollection.new
     end
 
     def move(destination)
       exit = current_room.exit destination
       if exit
         @current_room = exit
-        describe current_room["look"]
+        describe current_room.actions["look"]
       else
         puts "Invalid exit"
       end
@@ -83,17 +90,17 @@ module Ghost
     end
   end
 
-  class Zone
-    attr_accessor :name, :rooms
+  class Zone < Hash
+    # Properties
+    attr_accessor :name
   end
 
   class Room
-    include Actionable
+    # Actions
     attr_accessor :actions
-    @actions = {}
 
+    # Properties
     attr_accessor :zone, :name, :exits
-    @name = nil
     @exits = []
 
     def exit(destination)
@@ -106,6 +113,10 @@ module Ghost
 
       # Return nil if no matching exit is found
       return nil
+    end
+
+    def initialize
+      @actions = Ghost::ActionCollection.new
     end
   end
 

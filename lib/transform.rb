@@ -29,11 +29,11 @@ module Ghost
          :exits         => subtree(:exits),
          :description   => subtree(:descriptions),
          :local_actions => subtree(:actions)) do |dict|
-      room             = Ghost::Room.new
-      room.zone        = dict[:zoned_room][:zone] # not yet object ref
-      room.name        = dict[:zoned_room][:name]
-      room.exits       = dict[:exits] # not yet object refs
-      room.actions     = flatten_actions dict[:actions]
+      room                = Ghost::Room.new
+      room.zone           = dict[:zoned_room][:zone] # not yet object ref
+      room.name           = dict[:zoned_room][:name]
+      room.exits          = dict[:exits] # not yet object refs
+      room.actions.merge!   flatten_actions dict[:actions]
 
       # Add `> look` command to all rooms
       room.actions[Ghost::Command.new "look"] = flatten_descriptions dict[:descriptions]
@@ -46,9 +46,10 @@ module Ghost
          :rooms          => subtree(:rooms)) do |dict|
       game = Ghost::Game.new
       game.start_description = Ghost::Description.new dict[:start]
-      game.actions           = flatten_actions dict[:actions]
-      game.zones             = inflate_zones dict[:rooms]
+      game.actions.merge!      flatten_actions dict[:actions]
+      game.merge!              inflate_zones dict[:rooms]
       game.current_room      = dict[:rooms].first
+
       inflate_timestamps game
       game
     end
@@ -97,7 +98,6 @@ module Ghost
           unless zones.key? room.zone
             zones[room.zone] = Ghost::Zone.new
             zones[room.zone].name = room.zone
-            zones[room.zone].rooms = {}
             last_zone = zones[room.zone]
           end
         end
@@ -111,12 +111,12 @@ module Ghost
         end
 
         # Add room to zone
-        zones[room.zone.name].rooms[room.name] = room
+        zones[room.zone.name][room.name] = room
       end
 
       # Hydrate exit refs
       zones.each do |name, zone|
-        zone.rooms.each do |name, room|
+        zone.each do |name, room|
           exit_refs = []
 
           room.exits.each do |exit|
@@ -126,7 +126,7 @@ module Ghost
             exit_zone = (exit.key? :zone) ? zones[exit[:zone]] : room.zone
 
             # Add room ref to list of valid exits
-            exit_refs << exit_zone.rooms[exit[:name]]
+            exit_refs << exit_zone[exit[:name]]
           end
 
           # Replace list of strings with list of refs
@@ -142,8 +142,8 @@ module Ghost
       timestamps = {}
 
       # Set all absolute timestamps to integer values
-      game.zones.each do |name, zone|
-        zone.rooms.each do |name, room|
+      game.each do |name, zone|
+        zone.each do |name, room|
           rehashed_descriptions = {}
 
           room.actions.each do |command, description|
@@ -170,8 +170,8 @@ module Ghost
       end
 
       # Set all relative timestamps to integer values
-      game.zones.each do |name, zone|
-        zone.rooms.each do |name, room|
+      game.each do |name, zone|
+        zone.each do |name, room|
           rehashed_descriptions = {}
 
           room.actions.each do |command, description|
