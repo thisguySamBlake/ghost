@@ -145,12 +145,8 @@ module Ghost
         timestamp.is_a? Hash and timestamp.key? :operator and timestamp[:operator] == "="
       end
       process_timestamps_if(game, is_absolute_timestamp) do |timestamp|
-        time = timestamp[:value]
-
-        # Add to timestamp dictionary
-        timestamps[timestamp[:name]] = time
-
-        time
+        # Add integer value to timestamp dictionary, then return it
+        timestamps[timestamp[:name]] = timestamp[:value]
       end
 
       # Set all relative timestamps to integer values
@@ -158,8 +154,10 @@ module Ghost
         timestamp.is_a? Hash and timestamp.key? :name
       end
       process_timestamps_if(game, is_relative_timestamp) do |timestamp|
+        # Look up base time value of named timestamp from dictionary
         time = timestamps[timestamp[:name]]
 
+        # Modify time value per the provided operator
         if timestamp.key? :operator
           if timestamp[:operator] == "+"
             time += timestamp[:value]
@@ -168,6 +166,7 @@ module Ghost
           end
         end
 
+        # Return modified time value
         time
       end
     end
