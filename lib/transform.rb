@@ -137,39 +137,43 @@ module Ghost
       zones
     end
 
-    # TODO: Refactor (improve object model)
     def self.inflate_timestamps(game)
       timestamps = {}
 
       # Set all absolute timestamps to integer values
-      game.each do |name, zone|
-        zone.each do |name, room|
-          rehashed_descriptions = {}
+      is_absolute_timestamp = Proc.new do |timestamp|
+        timestamp.is_a? Hash and timestamp.key? :operator and timestamp[:operator] == "="
+      end
+      process_timestamps_if(game, is_absolute_timestamp) do |timestamp|
+        time = timestamp[:value]
 
-          room.actions.each do |command, description|
-            rehashed_descriptions = {}
+        # Add to timestamp dictionary
+        timestamps[timestamp[:name]] = time
 
-            description.each do |timestamp, descriptive_text|
-              if timestamp.is_a? Hash and timestamp.key? :operator and timestamp[:operator] == "="
-                time = timestamp[:value]
-
-                # Add to timestamp dictionary
-                timestamps[timestamp[:name]] = time
-
-                # Replace timestamp object with integer value
-                # NOTE: We can't modify the hash during iteration, because Ruby
-                rehashed_descriptions[time] = descriptive_text
-                description.delete timestamp
-              end
-            end
-
-            # Add descriptions with integer timestamps
-            description.merge! rehashed_descriptions
-          end
-        end
+        time
       end
 
       # Set all relative timestamps to integer values
+      is_relative_timestamp = Proc.new do |timestamp|
+        timestamp.is_a? Hash and timestamp.key? :name
+      end
+      process_timestamps_if(game, is_relative_timestamp) do |timestamp|
+        time = timestamps[timestamp[:name]]
+
+        if timestamp.key? :operator
+          if timestamp[:operator] == "+"
+            time += timestamp[:value]
+          elsif timestamp[:operator] == "-"
+            time -= timestamp[:value]
+          end
+        end
+
+        time
+      end
+    end
+
+    # Pass through all timestamps and replace them with an integer value if condition is met
+    def self.process_timestamps_if(game, condition)
       game.each do |name, zone|
         zone.each do |name, room|
           rehashed_descriptions = {}
@@ -178,16 +182,8 @@ module Ghost
             rehashed_descriptions = {}
 
             description.each do |timestamp, descriptive_text|
-              if timestamp.is_a? Hash and timestamp.key? :name
-                # Calculate relative time value
-                time = timestamps[timestamp[:name]]
-                if timestamp.key? :operator
-                  if timestamp[:operator] == "+"
-                    time += timestamp[:value]
-                  elsif timestamp[:operator] == "-"
-                    time -= timestamp[:value]
-                  end
-                end
+              if condition.call timestamp
+                time = yield timestamp
 
                 # Replace timestamp object with integer value
                 # NOTE: We can't modify the hash during iteration, because Ruby
