@@ -2,22 +2,6 @@ module Ghost
   require 'awesome_print'
   require 'readline'
 
-  class ActionCollection < Hash
-    def [](input)
-      # Find an action that matches the input
-      action = find do |command, result|
-        if command.transitive
-          input.start_with?(command)
-        else
-          input == command
-        end
-      end
-
-      # If an action is found, return its result
-      (action) ? action[1] : nil
-    end
-  end
-
   class Game < Hash
     # Actions
     attr_accessor :actions
@@ -120,6 +104,31 @@ module Ghost
     end
   end
 
+  class ActionCollection < Hash
+    def [](input)
+      # Find an action that matches the input
+      action = find do |command, result|
+        if command.transitive
+          input.start_with?(command)
+        else
+          input == command
+        end
+      end
+
+      # If an action is found, return its result
+      (action) ? action[1] : nil
+    end
+  end
+
+  class Command < String
+    attr_accessor :transitive
+
+    def initialize(str, transitive: false)
+      super str
+      @transitive = transitive
+    end
+  end
+
   class Description < Hash
     # Instantiate a Description from a hash
     def self.new(hsh)
@@ -155,15 +164,6 @@ module Ghost
 
       # Return nil if no such timestamp is found
       return nil
-    end
-  end
-
-  class Command < String
-    attr_accessor :transitive
-
-    def initialize(str, transitive: false)
-      super str
-      @transitive = transitive
     end
   end
 end
