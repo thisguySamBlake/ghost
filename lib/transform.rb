@@ -184,7 +184,7 @@ module Ghost
                 time = yield timestamp
 
                 # Replace timestamp object with integer value
-                # NOTE: We can't modify the hash during iteration, because Ruby
+                # NOTE: We can't add elements to the hash during iteration, because Ruby
                 rehashed_descriptions[time] = descriptive_text
                 description.delete timestamp
               end
