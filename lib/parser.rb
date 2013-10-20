@@ -8,6 +8,7 @@ module Ghost
     rule(:indent)     { match(' ').repeat(2) }
     rule(:newline)    { match('\n') }
     rule(:blank_line) { newline.repeat(2) }
+    rule(:eof)        { newline.repeat >> any.absent? }
 
     # Prompts
     rule(:prompt)         { str('>') >> space }
@@ -24,7 +25,7 @@ module Ghost
     # Text
     rule(:wildcard)    { space >> str('*') >> space? }
     rule(:label)       { (arrow.absent? >> newline.absent? >> wildcard.absent? >> any).repeat(1).as(:label) }
-    rule(:description) { (new_prompt.absent? >> timestamp.absent? >> any).repeat(1).as(:descriptive_text) }
+    rule(:description) { (eof.absent? >> new_prompt.absent? >> timestamp.absent? >> any).repeat(1).as(:descriptive_text) }
 
     # Commands
     rule(:room_command_prefix)  { str('go') >> space }
@@ -50,7 +51,7 @@ module Ghost
     rule(:zoned_room) { zone.maybe >> label.as(:name)}
 
     # Game
-    rule(:game) { description.as(:start) >> action.repeat.as(:global_actions) >> room.repeat(1).as(:rooms) }
+    rule(:game) { description.as(:start) >> action.repeat.as(:global_actions) >> room.repeat(1).as(:rooms) >> eof }
     root :game
   end
 end
