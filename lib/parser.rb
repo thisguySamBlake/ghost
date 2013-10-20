@@ -23,7 +23,7 @@ module Ghost
     rule(:operator)      { space >> (str('=') | str('+') | str('-')).as(:operator) >> space }
 
     # Text
-    rule(:wildcard)    { space >> str('*') >> space? }
+    rule(:wildcard)    { space >> str('*') }
     rule(:label)       { (arrow.absent? >> newline.absent? >> wildcard.absent? >> any).repeat(1).as(:label) }
     rule(:description) { (eof.absent? >> new_prompt.absent? >> timestamp.absent? >> any).repeat(1).as(:descriptive_text) }
 
