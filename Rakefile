@@ -1,4 +1,6 @@
 require 'awesome_print'
+require 'parslet'
+require 'parslet/convenience'
 require_relative 'lib/parser'
 require_relative 'lib/reader'
 require_relative 'lib/transform'
@@ -14,7 +16,7 @@ namespace 'test' do
   end
 
   task :parser do
-    parse = Ghost::Parser.new.parse Ghost::Reader.new.read test_ghost
+    parse = Ghost::Parser.new.parse_with_debug Ghost::Reader.new.read test_ghost
     ap parse
   end
 
