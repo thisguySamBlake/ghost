@@ -11,5 +11,7 @@ The following `rake` tasks are available to test the game defined in [test/](tes
 - `rake test:reader`: output game directory read/concatenate results
 - `rake test:parser`: output parse results
 - `rake test:transform`: output transform results (after parsing)
-- `rake test:console`: parse, transform, and run test game in console
-- `rake test:server`: parse, transform, and run test game as an AJAX server @ ``http://localhost:4567`
+- `rake test:console`: play test game in console
+- `rake test:server`: play test game via AJAX requests
+  - `http://localhost:4567/start`: start game
+  - `http://localhost:4567/execute/:command`: execute command
