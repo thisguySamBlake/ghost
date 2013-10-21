@@ -1,9 +1,9 @@
 require 'awesome_print'
 require 'parslet'
 require 'parslet/convenience'
-require_relative 'lib/parser'
-require_relative 'lib/reader'
-require_relative 'lib/transform'
+require_relative File.join "lib", "parser"
+require_relative File.join "lib", "reader"
+require_relative File.join "lib", "transform"
 
 test_ghost = "test"
 
@@ -25,8 +25,7 @@ namespace 'test' do
     ap game, raw: true
   end
 
-  task :game do
-    game = Ghost::Transform.new.apply Ghost::Parser.new.parse Ghost::Reader.new.read test_ghost
-    game.play
+  task :console do
+    system "ruby ghost.rb", { chdir: "console" }
   end
 end

@@ -1,7 +1,4 @@
 module Ghost
-  require 'awesome_print'
-  require 'readline'
-
   class Game < Hash
     # Actions
     attr_accessor :actions
@@ -14,7 +11,7 @@ module Ghost
 
     def describe(description, time_cost: 1)
       @time += time_cost
-      puts description[@time]
+      description[@time]
     end
 
     def execute(command)
@@ -25,7 +22,7 @@ module Ghost
         @time = next_time - 1 if next_time
         describe current_room.actions["look"]
       elsif command == "time"
-        puts @time
+        @time
       elsif command.start_with? "go "
         move command[3..command.length]
       elsif current_room.actions[command]
@@ -33,7 +30,7 @@ module Ghost
       elsif self.actions[command]
         describe self.actions[command]
       else
-        puts "Unrecognized command"
+        "Unrecognized command"
       end
     end
 
@@ -47,24 +44,7 @@ module Ghost
         @current_room = exit
         describe current_room.actions["look"]
       else
-        puts "Invalid exit"
-      end
-    end
-
-    def play
-      puts
-      start
-      puts
-      begin
-        while input = Readline.readline("> ", true).downcase
-          puts
-          execute input
-          puts
-        end
-      rescue Interrupt => e
-        puts "quit"
-        puts
-        exit
+        "Invalid exit"
       end
     end
 
