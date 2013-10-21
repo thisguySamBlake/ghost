@@ -2,9 +2,9 @@ require_relative 'game'
 
 module Ghost
   class Transform < Parslet::Transform
-    # Labels / Descriptions
-    rule(:label            => simple(:text)) { String(text) }
-    rule(:descriptive_text => simple(:text)) { { 0 => String(text) } }
+    # Text
+    rule(:label => simple(:text)) { String(text) }
+    rule(:prose => simple(:text)) { { 0 => String(text) } }
 
     # Timestamps
     rule(:name     => simple(:name))     { { :name => String(name) } }
@@ -13,39 +13,39 @@ module Ghost
          :value    => simple(:value))    { { :name     => String(name),
                                              :operator => String(operator),
                                              :value    => Integer(value) } }
-    rule(:timestamp        => subtree(:t),
-         :descriptive_text => simple(:text)) { { t => String(text) } }
+    rule(:timestamp => subtree(:t),
+         :prose     => simple(:text)) { { t => String(text) } }
 
     # Actions
-    rule(:commands => sequence(:commands),
-         :result   => subtree(:descriptions)) do |dict|
+    rule(:commands    => sequence(:commands),
+         :description => subtree(:description)) do |dict|
       { :commands    => commands,
-        :description => flatten_descriptions(dict[:descriptions]) }
+        :description => flatten_description(dict[:description]) }
     end
 
     # Rooms
-    rule(:room_name => simple(:name)) { { :zone => nil, :name => name } }
+    rule(:room_name => simple(:room)) { { :zone => nil, :room => room } }
     rule(:zoned_room    => subtree(:zoned_room),
          :exits         => subtree(:exits),
-         :description   => subtree(:descriptions),
+         :description   => subtree(:description),
          :local_actions => subtree(:actions)) do |dict|
       room                = Ghost::Room.new
       room.zone           = dict[:zoned_room][:zone] # not yet object ref
-      room.name           = dict[:zoned_room][:name]
+      room.name           = dict[:zoned_room][:room]
       room.exits          = dict[:exits] # not yet object refs
       room.actions.merge!   flatten_actions dict[:actions]
 
       # Add `> look` command to all rooms
-      room.actions[Ghost::Command.new "look"] = flatten_descriptions dict[:descriptions]
+      room.actions[Ghost::Command.new "look"] = flatten_description dict[:description]
       room
     end
 
     # Game
-    rule(:start          => subtree(:start),
-         :global_actions => subtree(:actions),
-         :rooms          => subtree(:rooms)) do |dict|
+    rule(:start_description => subtree(:start_description),
+         :global_actions    => subtree(:actions),
+         :rooms             => subtree(:rooms)) do |dict|
       game = Ghost::Game.new
-      game.start_description = Ghost::Description.new dict[:start]
+      game.start_description = Ghost::Description.new dict[:start_description]
       game.actions.merge!      flatten_actions dict[:actions]
       game.merge!              inflate_zones dict[:rooms]
       game.current_room      = dict[:rooms].first
@@ -71,7 +71,7 @@ module Ghost
             command = Ghost::Command.new command_hash[:transitive_command], transitive: true
           end
 
-          flattened_actions[command] = flatten_descriptions action[:result]
+          flattened_actions[command] = flatten_description action[:description]
         end
       end
 
@@ -79,12 +79,13 @@ module Ghost
     end
 
     # Make description data structures consistent
-    def self.flatten_descriptions(descriptions)
-      # Convert to array if there is only one description
-      descriptions = [descriptions] unless descriptions.is_a? Array
+    def self.flatten_description(description)
+      # Convert to array if there is only one result
+      description = [description] unless description.is_a? Array
 
-      # Merge array of hashes: i.e. [{0 => "str0"}, {10 => "str1"}] yields {0 => "str0", 10 => "str1"}
-      Ghost::Description.new descriptions.inject(:merge)
+      # Merge array of hashes
+      # i.e. [{0 => "str0"}, {10 => "str1"}] yields {0 => "str0", 10 => "str1"}
+      Ghost::Description.new description.inject(:merge)
     end
 
     # Convert zone strings to first class object refs
@@ -126,7 +127,7 @@ module Ghost
             exit_zone = (exit.key? :zone) ? zones[exit[:zone]] : room.zone
 
             # Add room ref to list of valid exits
-            exit_refs << exit_zone[exit[:name]]
+            exit_refs << exit_zone[exit[:room]]
           end
 
           # Replace list of strings with list of refs
@@ -178,13 +179,13 @@ module Ghost
           room.actions.each do |command, description|
             rehashed_descriptions = {}
 
-            description.each do |timestamp, descriptive_text|
+            description.each do |timestamp, result|
               if condition.call timestamp
                 time = yield timestamp
 
                 # Replace timestamp object with integer value
                 # NOTE: We can't add elements to the hash during iteration, because Ruby
-                rehashed_descriptions[time] = descriptive_text
+                rehashed_descriptions[time] = result
                 description.delete timestamp
               end
             end
