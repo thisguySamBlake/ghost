@@ -1,10 +1,7 @@
 require 'readline'
-require_relative File.join "..", "lib", "parser"
-require_relative File.join "..", "lib", "reader"
-require_relative File.join "..", "lib", "transform"
+require_relative File.join "..", "test", "game"
 
-ghost_string = Ghost::Reader.new.read File.join File.dirname(__FILE__), "..", "test"
-game = Ghost::Transform.new.apply Ghost::Parser.new.parse ghost_string
+game = test_game
 
 puts
 puts game.start

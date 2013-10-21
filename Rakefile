@@ -5,7 +5,7 @@ require_relative File.join "lib", "parser"
 require_relative File.join "lib", "reader"
 require_relative File.join "lib", "transform"
 
-test_ghost = "test"
+test_ghost = File.join File.dirname(__FILE__), "test", "game"
 
 task :test => ["test:parser", "test:transform"]
 
@@ -27,5 +27,9 @@ namespace 'test' do
 
   task :console do
     system "ruby ghost.rb", { chdir: "console" }
+  end
+
+  task :server do
+    system "ruby server.rb", { chdir: "ajax" }
   end
 end
