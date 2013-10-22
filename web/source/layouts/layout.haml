@@ -1,0 +1,13 @@
+!!!
+%html{lang: "en"}
+  %head
+    %meta{charset: "utf-8"}/
+    %title ghost
+    = meta_tag "IE=edge,chrome=1", 'http-equiv' => "X-UA-Compatible"
+    = meta_tag "width=device-width", name: "viewport"
+    = stylesheet_link_tag "app"
+  %body
+    = yield
+
+    = javascript_include_tag "vendor/jquery.js"
+    = javascript_include_tag "app"

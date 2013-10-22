@@ -32,4 +32,9 @@ namespace 'test' do
   task :server do
     system "ruby server.rb", { chdir: "ajax" }
   end
+
+  task :client do
+    system "middleman build", { chdir: "web" }
+    system "ruby server.rb", { chdir: "ajax" }
+  end
 end
