@@ -1,3 +1,4 @@
+require 'kramdown'
 require 'sinatra'
 require_relative File.join "..", "test", "game"
 
@@ -13,9 +14,14 @@ end
 
 get '/start/' do
   session[:game] = test_game
-  session[:game].start
+  process_markup session[:game].start
 end
 
 get '/execute/*' do |command|
-  session[:game].execute command
+  process_markup session[:game].execute command
+end
+
+def process_markup(markup)
+  # Parse Markdown after accounting for alternate blockquote syntax
+  markdown markup.gsub /^    /, "> "
 end
