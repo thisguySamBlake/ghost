@@ -7,7 +7,8 @@
     = meta_tag "width=device-width", name: "viewport"
     = stylesheet_link_tag "app"
   %body
-    = yield
+    .page
+      = yield
 
     = javascript_include_tag "vendor/jquery.js"
     = javascript_include_tag "app"

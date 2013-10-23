@@ -11,3 +11,4 @@ gem 'thin'
 
 # Web client
 gem 'middleman', '~> 3.1.5'
+gem 'susy'

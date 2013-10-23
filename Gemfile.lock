@@ -85,6 +85,9 @@ GEM
     sprockets-sass (1.0.1)
       sprockets (~> 2.0)
       tilt (~> 1.1)
+    susy (1.0.9)
+      compass (>= 0.12.2)
+      sass (>= 3.2.0)
     thin (1.6.0)
       daemons (>= 1.0.9)
       eventmachine (>= 1.0.0)
@@ -103,4 +106,5 @@ DEPENDENCIES
   middleman (~> 3.1.5)
   parslet (~> 1.5)
   sinatra
+  susy
   thin

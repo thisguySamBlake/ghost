@@ -1,0 +1,66 @@
+@import compass/reset
+@import susy
+
+$total-columns: 7
+$column-width: 4em
+$gutter-width: 1em
+$grid-padding: $gutter-width
+
+$base-font-size: 18px
+$base-line-height: 22px
+
++establish-baseline
+
+$indent: rhythm()
+
+=bold
+  font-weight: bold
+
+=italic
+  font-style: italic
+
+b
+  +bold
+
+blockquote
+  margin-left: $indent
+
+code
+  +adjust-font-size-to(16px)
+  background: #eeeeee
+  font-family: monospace
+
+em
+  +italic
+
+.game
+  +leader
+  +trailer
+
+i
+  +italic
+
+input
+  font-size: 24px
+  height: 30px
+  text-align: center
+  width: 100%
+
+ol
+  +trailer
+  list-style-type: decimal
+  margin-left: $indent
+
+p
+  +trailer
+
+.page
+  +container
+
+strong
+  +bold
+
+ul
+  +trailer
+  list-style-type: circle
+  margin-left: $indent
