@@ -100,6 +100,11 @@ before time 1, and it requires at least one time step to reach this room. This
 text, on the other hand, would be seen if the player executed `> go next room`
 as their first command.
 
+Timestamp values set inline (as in this file) can be overridden by values set in
+`.ghost_time` manifest files such as `timestamp_manifest.ghost_time`. For
+complex timestamp relationships, this may be easier to maintain than inline
+timestamps distributed across multiple `.ghost` files.
+
 ghost will automatically generate a `> wait` command, which serves to increment
 elapsed play time until a new description is available. If there is no future
 description, the command does nothing. (Though it's invisible to the player how

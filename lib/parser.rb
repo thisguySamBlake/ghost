@@ -12,8 +12,8 @@ module Ghost
     # Symbols
     rule(:arrow)         { space.maybe >> str('->') >> space }
     rule(:bracket)       { left_bracket | right_bracket }
-    rule(:left_bracket)  { str('[') }
-    rule(:right_bracket) { str(']') }
+    rule(:left_bracket)  { str('[') >> space.maybe }
+    rule(:right_bracket) { space.maybe >> str(']') }
     rule(:operator)      { space >> (str('=') | str('+') | str('-')).as(:operator) >> space }
     rule(:wildcard)      { space >> str('*') }
 
@@ -23,12 +23,13 @@ module Ghost
     rule(:synonym_prompt) { newline >> prompt }
 
     # Text
-    rule(:label) { (arrow.absent?      >>
-                    newline.absent?    >>
-                    wildcard.absent?   >> any).repeat(1).as(:label) }
-    rule(:prose) { (eof.absent?        >>
-                    new_prompt.absent? >>
-                    timestamp.absent?  >> any).repeat(1).as(:prose) }
+    rule(:label) { (arrow.absent?    >>
+                    newline.absent?  >>
+                    wildcard.absent? >> any).repeat(1).as(:label) }
+    rule(:prose) { (eof.absent?                >>
+                    new_prompt.absent?         >>
+                    result_timestamp.absent?   >>
+                    timestamp_manifest.absent? >> any).repeat(1).as(:prose) }
 
     # Commands
     rule(:command)              { room_command_prefix.absent? >>
@@ -41,20 +42,23 @@ module Ghost
     rule(:room_command_prefix)  { str('go') >> space }
 
     # Timestamps
-    rule(:timestamp)       { blank_line                                               >>
-                             left_bracket                                             >>
-                             (timestamp_name >> timestamp_value.maybe).as(:timestamp) >>
-                             right_bracket }
-    rule(:timestamp_name)  { (bracket.absent?  >>
-                              newline.absent?  >>
-                              operator.absent? >> any).repeat(1).as(:name) }
-    rule(:timestamp_value) { operator >>
-                             match('\d').repeat(1).as(:value) }
+    rule(:timestamp)          { left_bracket                                             >>
+                                (timestamp_name >> timestamp_value.maybe).as(:timestamp) >>
+                                right_bracket }
+    rule(:timestamp_name)     { (bracket.absent?  >>
+                                 newline.absent?  >>
+                                 operator.absent? >> any).repeat(1).as(:name) }
+    rule(:timestamp_value)    { operator >>
+                                match('\d').repeat(1).as(:value) }
+    rule(:result_timestamp)   { blank_line >> timestamp }
+    rule(:timestamp_manifest) { (blank_line         >>
+                                 str('.ghost_time') >>
+                                 (newline.repeat(1) >> timestamp).repeat(1)).repeat(1) }
 
     # Actions
     rule(:action)      { commands.as(:commands) >>
                          description.as(:description) }
-    rule(:description) { result >> (timestamp >> result).repeat }
+    rule(:description) { result >> (result_timestamp >> result).repeat }
     rule(:result)      { blank_line >> prose }
 
     # Rooms
@@ -73,9 +77,10 @@ module Ghost
                               zoned_room_label.as(:exit) }
 
     # Game
-    rule(:game) { prose.as(:start_description)      >>
-                  action.repeat.as(:global_actions) >>
-                  room.repeat(1).as(:rooms)         >>
+    rule(:game) { prose.as(:start_description)                            >>
+                  action.repeat.as(:global_actions)                       >>
+                  room.repeat(1).as(:rooms)                               >>
+                  timestamp_manifest.repeat(0, 1).as(:timestamp_manifest) >>
                   eof }
     root(:game)
   end

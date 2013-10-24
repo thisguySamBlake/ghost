@@ -41,16 +41,17 @@ module Ghost
     end
 
     # Game
-    rule(:start_description => subtree(:start_description),
-         :global_actions    => subtree(:actions),
-         :rooms             => subtree(:rooms)) do |dict|
+    rule(:start_description  => subtree(:start_description),
+         :global_actions     => subtree(:actions),
+         :rooms              => subtree(:rooms),
+         :timestamp_manifest => subtree(:timestamp_manifest)) do |dict|
       game = Ghost::Game.new
       game.start_description = Ghost::Description.new dict[:start_description]
       game.actions.merge!      flatten_actions dict[:actions]
       game.merge!              inflate_zones dict[:rooms]
       game.current_room      = dict[:rooms].first
 
-      inflate_timestamps game
+      inflate_timestamps game, dict[:timestamp_manifest]
       game
     end
 
@@ -138,19 +139,31 @@ module Ghost
       zones
     end
 
-    def self.inflate_timestamps(game)
+    def self.inflate_timestamps(game, timestamp_manifest)
       timestamps = {}
 
-      # Set all absolute timestamps to integer values
-      is_absolute_timestamp = Proc.new do |timestamp|
-        timestamp.is_a? Hash and timestamp.key? :operator and timestamp[:operator] == "="
+      # Set absolute timestamps set in manifest files
+      timestamp_manifest.each do |timestamp|
+        timestamp = timestamp[:timestamp]
+        if timestamp[:operator] == "="
+          # Add time value to timestamp dictionary
+          timestamps[timestamp[:name]] = timestamp[:value]
+        end
       end
-      process_timestamps_if(game, is_absolute_timestamp) do |timestamp|
-        # Add integer value to timestamp dictionary, then return it
+
+      # Set absolute timestamps not defined in manifest files
+      is_new_absolute_timestamp = Proc.new do |timestamp|
+        timestamp.is_a? Hash             and not
+        timestamps.key? timestamp[:name] and
+        timestamp.key? :operator         and
+        timestamp[:operator] == "="
+      end
+      process_timestamps_if(game, is_new_absolute_timestamp) do |timestamp|
+        # Add time value to timestamp dictionary, then return it
         timestamps[timestamp[:name]] = timestamp[:value]
       end
 
-      # Set all relative timestamps to integer values
+      # Set all relative timestamps to time values
       is_relative_timestamp = Proc.new do |timestamp|
         timestamp.is_a? Hash and timestamp.key? :name
       end

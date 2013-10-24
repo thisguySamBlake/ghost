@@ -1,0 +1,5 @@
+[one time step away =   1]
+[game over, man     = 111]
+
+[timestamps can be separated by blank lines         = 0]
+[and they can also be in multiple .ghost_time files = 0]
