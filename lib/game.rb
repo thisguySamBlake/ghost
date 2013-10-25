@@ -11,8 +11,21 @@ module Ghost
 
     def describe(description, time_cost: 1)
       @time += time_cost
-      result = description[@time].clone
-      description[@time].seen = true
+      result = description[@time]
+      unless result.seen
+        # Save a copy of the unseen result (to return)
+        result = result.clone
+
+        # Set this result as seen
+        description[@time].seen = true
+
+        # Set all future identical results as seen
+        description.each do |time, future_result|
+          if future_result.to_s == result.to_s
+            future_result.seen = true
+          end
+        end
+      end
       result
     end
 
