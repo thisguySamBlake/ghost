@@ -4,7 +4,7 @@ module Ghost
   class Transform < Parslet::Transform
     # Text
     rule(:label => simple(:text)) { String(text) }
-    rule(:prose => simple(:text)) { { 0 => String(text) } }
+    rule(:prose => simple(:text)) { { 0 => Ghost::Result.new(String(text)) } }
 
     # Timestamps
     rule(:name     => simple(:name))     { { :name => String(name) } }
@@ -14,7 +14,7 @@ module Ghost
                                              :operator => String(operator),
                                              :value    => Integer(value) } }
     rule(:timestamp => subtree(:t),
-         :prose     => simple(:text)) { { t => String(text) } }
+         :prose     => simple(:text)) { { t => Ghost::Result.new(String(text)) } }
 
     # Actions
     rule(:commands    => sequence(:commands),

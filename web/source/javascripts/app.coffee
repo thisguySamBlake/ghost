@@ -1,21 +1,20 @@
-async_timeout = 5
+$game  = -> $('.game')
+$input = -> $('input[type="text"]')
 
-update_display = (new_text) ->
-  $('.game').html new_text
+take_action = (url) ->
+  $.ajax url,
+    async: false
+    success: (response) ->
+      $game().html ""
+      $input().val ""
+      response = JSON.parse response
+      if response.seen then $game().addClass("seen") else $game().removeClass("seen")
+      $game().html response.markup
+      $input().focus()
+    timeout: 5
 
-$.ajax 'start/',
-  async: false
-  success: (response) ->
-    update_display response
-  timeout: async_timeout
+take_action 'start/'
 
 $('form').submit (e) ->
   e.preventDefault()
-  $input = $('input[type="text"]')
-  $.ajax 'execute/' + $input.val(),
-    async: false
-    success: (response) ->
-      $input.val("")
-      update_display response
-      $input.focus()
-    timeout: async_timeout
+  take_action 'execute/' + $input().val()

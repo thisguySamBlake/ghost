@@ -1,3 +1,4 @@
+require 'json'
 require 'kramdown'
 require 'sinatra'
 require_relative File.join "..", "test", "game"
@@ -14,11 +15,21 @@ end
 
 get '/start/' do
   session[:game] = test_game
-  process_markup session[:game].start
+  result = session[:game].start
+
+  response_data = {}
+  response_data[:markup] = process_markup result.to_s
+  response_data[:seen]   = false
+  response_data.to_json
 end
 
 get '/execute/*' do |command|
-  process_markup session[:game].execute command
+  result = session[:game].execute command
+
+  response_data = {}
+  response_data[:markup] = process_markup result.to_s
+  response_data[:seen]   = result.seen
+  response_data.to_json
 end
 
 def process_markup(markup)

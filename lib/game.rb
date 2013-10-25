@@ -11,7 +11,9 @@ module Ghost
 
     def describe(description, time_cost: 1)
       @time += time_cost
-      description[@time]
+      result = description[@time].clone
+      description[@time].seen = true
+      result
     end
 
     def execute(command)
@@ -22,7 +24,7 @@ module Ghost
         @time = next_time - 1 if next_time
         describe current_room.actions["look"]
       elsif command == "time"
-        @time
+        Ghost::Result.new @time.to_s
       elsif command.start_with? "go "
         move command[3..command.length]
       elsif current_room.actions[command]
@@ -30,7 +32,7 @@ module Ghost
       elsif self.actions[command]
         describe self.actions[command]
       else
-        "Unrecognized command"
+        Ghost::Result.new "Unrecognized command"
       end
     end
 
@@ -44,7 +46,7 @@ module Ghost
         @current_room = exit
         describe current_room.actions["look"]
       else
-        "Invalid exit"
+        Ghost::Result.new "Invalid exit"
       end
     end
 
@@ -144,6 +146,15 @@ module Ghost
 
       # Return nil if no such timestamp is found
       return nil
+    end
+  end
+
+  class Result < String
+    attr_accessor :seen
+
+    def initialize(str)
+      super str
+      @seen = false
     end
   end
 end

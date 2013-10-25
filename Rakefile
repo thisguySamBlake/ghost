@@ -34,7 +34,8 @@ namespace 'test' do
   end
 
   task :client do
-    system "middleman build", { chdir: "web" }
-    system "ruby server.rb", { chdir: "ajax" }
+    if system "middleman build", { chdir: "web" }
+      system "ruby server.rb", { chdir: "ajax" }
+    end
   end
 end
