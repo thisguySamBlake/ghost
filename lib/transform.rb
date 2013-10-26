@@ -42,11 +42,16 @@ module Ghost
 
     # Game
     rule(:start_description  => subtree(:start_description),
+         :endgame            => subtree(:endgame),
          :global_actions     => subtree(:actions),
          :rooms              => subtree(:rooms),
          :timestamp_manifest => subtree(:timestamp_manifest)) do |dict|
       game = Ghost::Game.new
       game.start_description = Ghost::Description.new dict[:start_description]
+      if dict[:endgame]
+        game.endgame_time    = dict[:endgame].keys.first
+        game.endgame_result  = Ghost::Result.new dict[:endgame].values.first, endgame: true
+      end
       game.actions.merge!      flatten_actions dict[:actions]
       game.merge!              inflate_zones dict[:rooms]
       game.current_room      = dict[:rooms].first
@@ -153,12 +158,12 @@ module Ghost
 
       # Set absolute timestamps not defined in manifest files
       is_new_absolute_timestamp = Proc.new do |timestamp|
-        timestamp.is_a? Hash             and not
-        timestamps.key? timestamp[:name] and
-        timestamp.key? :operator         and
+        timestamp.is_a? Hash                   and
+        (not timestamps.key? timestamp[:name]) and
+        timestamp.key? :operator               and
         timestamp[:operator] == "="
       end
-      process_timestamps_if(game, is_new_absolute_timestamp) do |timestamp|
+      process_all_timestamps_if(game, is_new_absolute_timestamp) do |timestamp|
         # Add time value to timestamp dictionary, then return it
         timestamps[timestamp[:name]] = timestamp[:value]
       end
@@ -167,7 +172,7 @@ module Ghost
       is_relative_timestamp = Proc.new do |timestamp|
         timestamp.is_a? Hash and timestamp.key? :name
       end
-      process_timestamps_if(game, is_relative_timestamp) do |timestamp|
+      process_all_timestamps_if(game, is_relative_timestamp) do |timestamp|
         # Look up base time value of named timestamp from dictionary
         time = timestamps[timestamp[:name]]
 
@@ -186,28 +191,44 @@ module Ghost
     end
 
     # Pass through all timestamps and replace them with an integer value if condition is met
-    def self.process_timestamps_if(game, condition)
+    def self.process_all_timestamps_if(game, condition, &process)
+      # Process timestamps on room actions
       game.each do |name, zone|
         zone.each do |name, room|
           room.actions.each do |command, description|
-            rehashed_descriptions = {}
-
-            description.each do |timestamp, result|
-              if condition.call timestamp
-                time = yield timestamp
-
-                # Replace timestamp object with integer value
-                # NOTE: We can't add elements to the hash during iteration, because Ruby
-                rehashed_descriptions[time] = result
-                description.delete timestamp
-              end
-            end
-
-            # Add descriptions with integer timestamps
-            description.merge! rehashed_descriptions
+            process_description_timestamps_if description, condition, &process
           end
         end
       end
+
+      # Process timestamps on global actions
+      game.actions.each do |command, description|
+        process_description_timestamps_if description, condition, &process
+      end
+
+      # Process timestamp on endgame timestamp
+      if game.endgame_time and condition.call game.endgame_time
+        game.endgame_time = process.call game.endgame_time
+      end
+    end
+
+    # Process timestamps in a single action description if condition is met
+    def self.process_description_timestamps_if(description, condition, &process)
+      rehashed_results = {}
+
+      description.each do |timestamp, result|
+        if condition.call timestamp
+          time = process.call timestamp
+
+          # Replace timestamp object with integer value
+          # NOTE: We can't add elements to the hash during iteration, because Ruby
+          rehashed_results[time] = result
+          description.delete timestamp
+        end
+      end
+
+      # Add results with integer timestamps
+      description.merge! rehashed_results
     end
   end
 end

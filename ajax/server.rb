@@ -18,8 +18,9 @@ get '/start/' do
   result = session[:game].start
 
   response_data = {}
-  response_data[:markup] = process_markup result.to_s
-  response_data[:seen]   = false
+  response_data[:markup]  = process_markup result.to_s
+  response_data[:seen]    = false
+  response_data[:endgame] = false
   response_data.to_json
 end
 
@@ -27,8 +28,9 @@ get '/execute/*' do |command|
   result = session[:game].execute command
 
   response_data = {}
-  response_data[:markup] = process_markup result.to_s
-  response_data[:seen]   = result.seen
+  response_data[:markup] =  process_markup result.to_s
+  response_data[:seen]   =  result.seen
+  response_data[:endgame] = result.endgame
   response_data.to_json
 end
 

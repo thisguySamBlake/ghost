@@ -4,13 +4,20 @@ module Ghost
     attr_accessor :actions
 
     # Properties
-    attr_accessor :start_description
+    attr_accessor :start_description, :endgame_time, :endgame_result
 
     # State
     attr_accessor :time, :current_room
 
     def describe(description, time_cost: 1)
       @time += time_cost
+
+      if @endgame_time
+        if @time >= @endgame_time
+          return @endgame_result
+        end
+      end
+
       result = description[@time]
       unless result.seen
         # Save a copy of the unseen result (to return)
@@ -31,7 +38,7 @@ module Ghost
 
     def execute(command)
       if command == "quit"
-        exit
+        Ghost::Result.new "Thanks for playing!", endgame: true
       elsif command == "wait"
         next_time = current_room.actions["look"].next_time @time
         @time = next_time - 1 if next_time
@@ -163,11 +170,12 @@ module Ghost
   end
 
   class Result < String
-    attr_accessor :seen
+    attr_accessor :seen, :endgame
 
-    def initialize(str)
+    def initialize(str, endgame: false)
       super str
       @seen = false
+      @endgame = endgame
     end
   end
 end

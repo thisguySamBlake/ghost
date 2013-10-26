@@ -10,15 +10,13 @@ puts
 begin
   while input = Readline.readline("> ", true).downcase
     puts
-    if input == "quit"
-      exit
-    else
-      puts game.execute input
-    end
+    result = game.execute input
+    puts result
     puts
+    if result.endgame
+      exit
+    end
   end
 rescue Interrupt => e
-  puts "quit"
-  puts
   exit
 end

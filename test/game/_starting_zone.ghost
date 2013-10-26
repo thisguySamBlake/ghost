@@ -18,6 +18,16 @@ The game begins in whatever room is defined first. ghost will automatically
 generate a `> look` command, which simply displays the description for the
 current room.
 
+[game over, man]
+
+We'll talk more about timestamps later, but know that if timestamped descriptive
+text is included after the starting description, it's presumed to be the
+definition of an endgame. (Endgames aren't strictly required, but most games
+will likely include them.)
+
+Once the specified timestamp is reached, the endgame descriptive text is shown
+and the game immediately ends.
+
 > get ye flask
 
 In general, the format of a ghost file is that you write a command following a

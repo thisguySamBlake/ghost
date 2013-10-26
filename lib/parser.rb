@@ -78,6 +78,7 @@ module Ghost
 
     # Game
     rule(:game) { prose.as(:start_description)                            >>
+                  (result_timestamp >> result).maybe.as(:endgame)         >>
                   action.repeat.as(:global_actions)                       >>
                   room.repeat(1).as(:rooms)                               >>
                   timestamp_manifest.repeat(0, 1).as(:timestamp_manifest) >>

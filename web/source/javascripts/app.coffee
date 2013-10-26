@@ -10,7 +10,7 @@ take_action = (url) ->
       response = JSON.parse response
       if response.seen then $game().addClass("seen") else $game().removeClass("seen")
       $game().html response.markup
-      $input().focus()
+      if response.endgame then $input().hide() else $input().focus()
     timeout: 5
 
 take_action 'start/'
