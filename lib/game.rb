@@ -117,7 +117,7 @@ module Ghost
     def exit(destination)
       # Attempt to find an exit matching the input
       exits.each do |exit|
-        if exit.name == destination or exit.zone.name == destination
+        if exit.name.downcase == destination or exit.zone.name.downcase == destination
           return exit
         end
       end
