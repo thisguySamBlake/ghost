@@ -4,7 +4,7 @@ module Ghost
     attr_accessor :actions
 
     # Properties
-    attr_accessor :start_description, :endgame_time, :endgame_result
+    attr_accessor :debug, :start_description, :endgame_time, :endgame_result
 
     # State
     attr_accessor :time, :current_room
@@ -39,12 +39,37 @@ module Ghost
     def execute(command)
       if command == "quit"
         Ghost::Result.new "Thanks for playing!", endgame: true
+      elsif @debug and command == "commands"
+        commands = ""
+        (self.actions.keys + current_room.actions.keys).each do |command, description|
+          if commands != ""
+            commands += "\n"
+          end
+          commands += "- " + command.to_s
+          if command.transitive
+            commands += " *"
+          end
+        end
+        Ghost::Result.new commands
+      elsif @debug and command == "exits"
+        exits = ""
+        current_room.exits.each do |exit|
+          if exits != ""
+            exits += "\n"
+          end
+          exits += "- "
+          if exit.zone != current_room.zone
+            exits += exit.zone.name + " -> "
+          end
+          exits += exit.name
+        end
+        Ghost::Result.new exits
+      elsif @debug and command == "time"
+        Ghost::Result.new @time.to_s
       elsif command == "wait"
         next_time = current_room.actions["look"].next_time @time
         @time = next_time - 1 if next_time
         describe current_room.actions["look"]
-      elsif command == "time"
-        Ghost::Result.new @time.to_s
       elsif command.start_with? "go "
         move command[3..command.length]
       elsif current_room.actions[command]

@@ -4,6 +4,7 @@ gem 'parslet', '~> 1.5'
 
 # Console
 gem 'awesome_print', :require => 'ap'
+gem 'trollop'
 
 # Web server
 gem 'sinatra'

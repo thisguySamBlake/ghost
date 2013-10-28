@@ -26,7 +26,7 @@ namespace 'test' do
   end
 
   task :console do
-    system "ruby ghost.rb", { chdir: "console" }
+    system "ruby ghost.rb --debug", { chdir: "console" }
   end
 
   task :server do

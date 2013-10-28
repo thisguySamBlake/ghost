@@ -1,7 +1,13 @@
 require 'readline'
+require 'trollop'
 require_relative File.join "..", "test", "game"
 
+opts = Trollop::options do
+  opt :debug, "Enable debugging commands"
+end
+
 game = test_game
+game.debug = opts[:debug]
 
 puts
 puts game.start
