@@ -2,6 +2,10 @@ source 'https://rubygems.org'
 
 gem 'parslet', '~> 1.5'
 
+# Authoring
+gem 'plist'
+gem 'rubyzip'
+
 # Console
 gem 'awesome_print', :require => 'ap'
 gem 'trollop'

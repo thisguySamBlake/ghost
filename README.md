@@ -5,6 +5,11 @@ ghost
 
 Because this format is relatively limited, it's beneficial to create an authorship environment that's optimized for writing in it. To that end, ghost provides a [syntax](test/game/_starting_zone.ghost) for writing explorative fiction, a [parser](lib/parser.rb) that handles that syntax, and a [transform](lib/transform.rb) that will convert the parse into a playable [game](lib/game.rb).
 
+The following `rake` tasks are available to set up the authorship environment:
+
+- `rake author:sublime-text`: generate a `ghost.sublime-package` file containing syntax definition and default environment settings compatible with Sublime Text
+  - Note that this package must be **manually** copied to the `Installed Packages` folder in your local installation of Sublime Text
+
 The following `rake` tasks are available to test the game defined in [test/game/](test/game/):
 
 - `rake test`: output parse and transform results

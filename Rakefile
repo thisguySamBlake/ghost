@@ -7,6 +7,12 @@ require_relative File.join "lib", "transform"
 
 test_ghost = File.join File.dirname(__FILE__), "test", "game"
 
+namespace 'author' do
+  task :'sublime-text' do
+    system "ruby " + File.join("author", "ghost.rb-tmLanguage")
+  end
+end
+
 task :test => ["test:parser", "test:transform"]
 
 namespace 'test' do

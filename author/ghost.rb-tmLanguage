@@ -1,0 +1,46 @@
+require 'plist'
+require 'zip'
+
+plist = {
+  name: "ghost",
+  scopeName: "text.ghost",
+  fileTypes: ["ghost", "ghost_time"],
+  patterns:  [
+      { comment:  "prompts / exits",
+        name:     "constant.language",
+        begin:    "-?> (go)?",
+        patterns: [
+            { comment: "labels",
+              name:    "string",
+              match:   ".+"
+            }
+        ],
+        end: "\\n"
+      },
+      { comment:  "timestamp",
+        name:     "support.function",
+        match:    "\\[[^\\n]+\\]\\n"
+      },
+      { comment:  "bold",
+        name:     "string",
+        match:    "\\*\\*[^\\*]+\\*\\*"
+      }
+  ],
+  uuid: "685c93e2-b4eb-4d3d-9b8c-541d6185e49f"
+}.to_plist
+
+# Create syntax definition
+plist_filename = "ghost.tmLanguage"
+File.open(File.join(File.dirname(__FILE__), plist_filename), 'w') { |file| file.write plist }
+
+# Build sublime-package
+package_filename  = "ghost.sublime-package"
+settings_filename = "ghost.sublime-settings"
+File.delete package_filename if File.exist? package_filename
+Zip::File.open(package_filename, Zip::File::CREATE) do |package|
+  package.add plist_filename,    File.join(File.dirname(__FILE__), plist_filename)
+  package.add settings_filename, File.join(File.dirname(__FILE__), settings_filename)
+end
+
+# Clean up generated syntax definition file
+File.delete File.join(File.dirname(__FILE__), plist_filename)
