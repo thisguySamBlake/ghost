@@ -67,3 +67,23 @@ ul
   +trailer
   list-style-type: circle
   margin-left: $indent
+
+.wait
+  animation:         waiting 2s ease-in-out 0 infinite
+  -webkit-animation: waiting 2s ease-in-out 0 infinite
+
+@keyframes waiting
+  0%
+    opacity: 1.0
+  50%
+    opacity: 0.2
+  100%
+    opacity: 1.0
+
+@-webkit-keyframes waiting
+  0%
+    opacity: 1.0
+  50%
+    opacity: 0.2
+  100%
+    opacity: 1.0
