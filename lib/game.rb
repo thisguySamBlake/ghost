@@ -9,16 +9,15 @@ module Ghost
     # State
     attr_accessor :time, :current_room
 
-    def describe(description, time_cost: 1)
-      @time += time_cost
-
-      if @endgame_time
-        if @time >= @endgame_time
-          return @endgame_result
-        end
+    def describe(description, time_cost: 1, wait: false)
+      if @endgame_time and @time + time_cost >= @endgame_time
+        @endgame_result.wait = @endgame_time - @time if wait
+        return @endgame_result
       end
 
+      @time += time_cost
       result = description[@time]
+
       unless result.seen
         # Save a copy of the unseen result (to return)
         result = result.clone
@@ -33,6 +32,8 @@ module Ghost
           end
         end
       end
+
+      result.wait = time_cost if wait
       result
     end
 
@@ -67,9 +68,10 @@ module Ghost
       elsif @debug and command == "time"
         Ghost::Result.new @time.to_s
       elsif command == "wait"
+        time_cost = 20
         next_time = current_room.actions["look"].next_time @time
-        @time = next_time - 1 if next_time
-        describe current_room.actions["look"]
+        time_cost = [next_time - @time, time_cost].min if next_time
+        describe current_room.actions["look"], time_cost: time_cost, wait: true
       elsif command.start_with? "go "
         move command[3..command.length]
       elsif current_room.actions[command]
@@ -195,11 +197,12 @@ module Ghost
   end
 
   class Result < String
-    attr_accessor :seen, :endgame
+    attr_accessor :seen, :wait, :endgame
 
-    def initialize(str, endgame: false)
+    def initialize(str, wait: nil, endgame: false)
       super str
       @seen = false
+      @wait = wait
       @endgame = endgame
     end
   end
