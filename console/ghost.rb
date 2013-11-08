@@ -23,11 +23,22 @@ begin
       Readline::HISTORY.pop
     end
 
-    # Output result
-    puts
     result = game.execute input
+
+    if result.wait
+      puts
+      result.wait.times do
+        sleep 1 unless game.debug
+        print "."
+        $stdout.flush
+      end
+      puts
+    end
+
+    puts
     puts result
     puts
+
     if result.endgame
       exit
     end
