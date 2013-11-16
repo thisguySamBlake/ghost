@@ -38,6 +38,7 @@ module Ghost
     end
 
     def execute(command)
+      command.downcase!
       if command == "quit"
         Ghost::Result.new "Thanks for playing!", endgame: true
       elsif @debug and command == "commands"
