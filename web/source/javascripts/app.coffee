@@ -18,7 +18,7 @@ take_action = (url) ->
         $game().addClass("wait")
         $input().prop('disabled', true)
         $input().prop('placeholder', "Waiting...")
-        window.setInterval ->
+        window.setTimeout ->
           $game().removeClass("wait")
           $input().prop('disabled', false)
           $input().prop('placeholder', old_placeholder)
