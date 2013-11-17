@@ -1,3 +1,6 @@
+require_relative File.join '..', 'util', 'strings'
+using CaseInsensitiveStrings
+
 module Ghost
   class Game < Hash
     # Actions
@@ -38,7 +41,6 @@ module Ghost
     end
 
     def execute(command)
-      command.downcase!
       if command == "quit"
         Ghost::Result.new "Thanks for playing!", endgame: true
       elsif @debug and command == "commands"
@@ -124,7 +126,7 @@ module Ghost
     def exit(destination)
       # Attempt to find an exit matching the input
       exits.each do |exit|
-        if exit.name.downcase == destination or exit.zone.name.downcase == destination
+        if exit.name == destination or exit.zone.name == destination
           return exit
         end
       end
@@ -143,7 +145,7 @@ module Ghost
       # Find an action that matches the input
       action = find do |command, result|
         if command.transitive
-          input.start_with?(command)
+          input.start_with? command
         else
           input == command
         end
