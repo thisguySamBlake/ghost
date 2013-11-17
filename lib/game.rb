@@ -68,6 +68,10 @@ module Ghost
         Ghost::Result.new exits
       elsif @debug and command == "time"
         Ghost::Result.new @time.to_s
+      elsif @debug and command.start_with? "jump "
+        zoned_room = command[5..command.length].split " -> ", 2
+        @current_room = self[zoned_room[0]][zoned_room[1]]
+        describe current_room.actions["look"], time_cost: 0
       elsif command == "wait"
         time_cost = 20
         next_time = current_room.actions["look"].next_time @time
