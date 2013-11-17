@@ -1,3 +1,4 @@
+require 'fileutils'
 require 'json'
 require 'kramdown'
 require 'sinatra'
@@ -16,6 +17,7 @@ end
 get '/start/' do
   session[:game] = test_game
   result = session[:game].start
+  write_to_ghost_log result
 
   response_data = {}
   response_data[:markup]  = process_markup result.to_s
@@ -26,7 +28,9 @@ get '/start/' do
 end
 
 get '/execute/*' do |command|
+  write_to_ghost_log "\n> " + command
   result = session[:game].execute command
+  write_to_ghost_log "\n" + result
 
   response_data = {}
   response_data[:markup]  = process_markup result.to_s
@@ -34,6 +38,21 @@ get '/execute/*' do |command|
   response_data[:wait]    = result.wait
   response_data[:endgame] = result.endgame
   response_data.to_json
+end
+
+def write_to_ghost_log(data)
+  log_dir = "logs"
+
+  unless session.has_key? :log
+    session[:log] = File.join log_dir, Time.now.strftime("%Y%m%d-%H%M%S") + ".ghost_log"
+  end
+
+  unless File.exists? session[:log]
+    Dir.mkdir log_dir unless Dir.exist? log_dir
+    FileUtils.touch session[:log]
+  end
+
+  File.open(session[:log], 'a') { |log| log.write data + "\n" }
 end
 
 def process_markup(markup)
