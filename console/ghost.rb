@@ -14,7 +14,7 @@ puts game.start
 puts
 
 begin
-  while input = Readline.readline("> ", true).downcase
+  while input = Readline.readline("> ", true)
     # Delete history entry if input is all whitespace
     Readline::HISTORY.pop if /^\s*$/ =~ input
 
