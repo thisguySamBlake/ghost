@@ -41,18 +41,20 @@ get '/execute/*' do |command|
 end
 
 def write_to_ghost_log(data)
-  log_dir = "logs"
+  if settings.test?
+    log_dir = "logs"
 
-  unless session.has_key? :log
-    session[:log] = File.join log_dir, Time.now.strftime("%Y%m%d-%H%M%S") + ".ghost_log"
+    unless session.has_key? :log
+      session[:log] = File.join log_dir, Time.now.strftime("%Y%m%d-%H%M%S") + ".ghost_log"
+    end
+
+    unless File.exists? session[:log]
+      Dir.mkdir log_dir unless Dir.exist? log_dir
+      FileUtils.touch session[:log]
+    end
+
+    File.open(session[:log], 'a') { |log| log.write data + "\n" }
   end
-
-  unless File.exists? session[:log]
-    Dir.mkdir log_dir unless Dir.exist? log_dir
-    FileUtils.touch session[:log]
-  end
-
-  File.open(session[:log], 'a') { |log| log.write data + "\n" }
 end
 
 def process_markup(markup)
