@@ -10,12 +10,15 @@ use Rack::Session::Pool, :expire_after => 1296000
 # Serve static files from Middleman output
 set :public_folder, File.join(File.dirname(__FILE__), "..", "web", "build")
 
+# Parse game object
+marshaled_game = Marshal.dump test_game
+
 get '/' do
   send_file File.join settings.public_folder, "index.html"
 end
 
 get '/start/' do
-  session[:game] = test_game
+  session[:game] = Marshal.load marshaled_game
   result = session[:game].start
   write_to_ghost_log result
 
